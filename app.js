@@ -1,26 +1,22 @@
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-/**
- * MCP control definitions (ajusta a tu gusto)
- * steps:
- *  - step: incremento normal
- *  - stepFast: incremento con Shift
- */
 const controls = {
-  course:   { value: 165, min: 0, max: 359, step: 1,   stepFast: 10,  wrap: true  },
-  speed:    { value: 100, min: 0, max: 450, step: 1,   stepFast: 10,  wrap: false },
-  heading:  { value: 130, min: 0, max: 359, step: 1,   stepFast: 10,  wrap: true  },
-  altitude: { value: 31000, min: 0, max: 45000, step: 100, stepFast: 1000, wrap: false },
-  vs:       { value: 0,   min: -6000, max: 6000, step: 100, stepFast: 500,  wrap: false }
+  course:   { value: 165,   min: 0,     max: 359,   step: 1,   stepFast: 10,   wrap: true  },
+  speed:    { value: 100,   min: 0,     max: 450,   step: 1,   stepFast: 10,   wrap: false },
+  heading:  { value: 130,   min: 0,     max: 359,   step: 1,   stepFast: 10,   wrap: true  },
+  altitude: { value: 31000, min: 0,     max: 45000, step: 100, stepFast: 1000, wrap: false },
+  vs:       { value: 0,     min: -6000, max: 6000,  step: 100, stepFast: 500,  wrap: false }
 };
 
 const ui = {
-  course:   { valueEl: document.getElementById("courseValue"),   knobEl: document.getElementById("courseKnob"),   markerEl: document.getElementById("courseMarker") },
-  speed:    { valueEl: document.getElementById("speedValue"),    knobEl: document.getElementById("speedKnob"),    markerEl: document.getElementById("speedMarker") },
-  heading:  { valueEl: document.getElementById("headingValue"),  knobEl: document.getElementById("headingKnob"),  markerEl: document.getElementById("headingMarker") },
-  altitude: { valueEl: document.getElementById("altitudeValue"), knobEl: document.getElementById("altitudeKnob"), markerEl: document.getElementById("altitudeMarker") },
-  vs:       { valueEl: document.getElementById("vsValue"),       knobEl: document.getElementById("vsKnob"),       markerEl: document.getElementById("vsMarker") },
+  course:   { disp: $("#courseDisp"),   knob: $("#courseKnob"),   ptr: $("#coursePtr") },
+  speed:    { disp: $("#speedDisp"),    knob: $("#speedKnob"),    ptr: $("#speedPtr") },
+  heading:  { disp: $("#headingDisp"),  knob: $("#headingKnob"),  ptr: $("#headingPtr") },
+  altitude: { disp: $("#altitudeDisp"), knob: $("#altitudeKnob"), ptr: $("#altitudePtr") },
+  vs:       { disp: $("#vsDisp"),       wheel: $("#vsWheel") }
 };
+
+function $(sel){ return document.querySelector(sel); }
 
 function normalizeWrap(val, min, max){
   const range = (max - min) + 1;
@@ -31,26 +27,22 @@ function normalizeWrap(val, min, max){
 
 function setValue(key, nextVal){
   const c = controls[key];
-  if (c.wrap) {
-    c.value = normalizeWrap(nextVal, c.min, c.max);
-  } else {
-    c.value = clamp(nextVal, c.min, c.max);
-  }
+  c.value = c.wrap ? normalizeWrap(nextVal, c.min, c.max) : clamp(nextVal, c.min, c.max);
   render(key);
 }
 
-function deltaValue(key, delta, fast=false){
+function deltaValue(key, dir, fast=false){
   const c = controls[key];
   const step = fast ? c.stepFast : c.step;
-  setValue(key, c.value + delta * step);
+  setValue(key, c.value + dir * step);
 }
 
-function angleForControl(key){
-  // Visual simple: mapea el valor al ángulo del marcador (0..300° aprox) para que no sea 360 completo.
+function angleFor(key){
+  // Mapeo visual (no 360 completo) para dar sensación MCP
   const c = controls[key];
   const t = (c.value - c.min) / (c.max - c.min);
-  const start = -140;      // grados
-  const sweep = 280;       // grados
+  const start = -120;
+  const sweep = 240;
   return start + t * sweep;
 }
 
@@ -58,108 +50,135 @@ function render(key){
   const c = controls[key];
   const u = ui[key];
 
-  u.valueEl.textContent = c.value;
+  if (u.disp) u.disp.textContent = String(c.value);
 
-  // Accesibilidad (slider)
-  u.knobEl.setAttribute("aria-valuenow", String(c.value));
-
-  const a = angleForControl(key);
-  u.markerEl.style.transform = `translate(-50%, -100%) rotate(${a}deg)`;
+  if (u.knob){
+    u.knob.setAttribute("aria-valuenow", String(c.value));
+    u.ptr.style.transform = `translate(-50%, -100%) rotate(${angleFor(key)}deg)`;
+  }
+  if (u.wheel){
+    u.wheel.setAttribute("aria-valuenow", String(c.value));
+    // feedback visual: mueve el “stripe” un pelín con el valor
+    const stripe = u.wheel.querySelector(".thumbwheel__stripe");
+    const t = (c.value - c.min) / (c.max - c.min);
+    stripe.style.transform = `translate(-50%, -50%) translateY(${(0.5 - t) * 8}px)`;
+  }
 }
 
-function renderAll(){
-  Object.keys(controls).forEach(render);
-}
+function renderAll(){ Object.keys(controls).forEach(render); }
 
-// Botones + / -
+/* Botones +/- */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-action]");
-  if (!btn) return;
-  const action = btn.dataset.action;
-  const target = btn.dataset.target;
-  if (!controls[target]) return;
-
+  const b = e.target.closest("button[data-action]");
+  if (!b) return;
+  const key = b.dataset.target;
+  if (!controls[key]) return;
   const fast = e.shiftKey;
-  deltaValue(target, action === "inc" ? +1 : -1, fast);
+  deltaValue(key, b.dataset.action === "inc" ? +1 : -1, fast);
 });
 
-// Rueda del ratón sobre knob o display (sube/baja)
-Object.keys(ui).forEach((key) => {
+/* Rueda ratón sobre knobs y displays */
+function addWheel(el, key){
+  el.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const fast = e.shiftKey;
+    const dir = e.deltaY < 0 ? +1 : -1;
+    deltaValue(key, dir, fast);
+  }, { passive:false });
+}
+
+["course","speed","heading","altitude"].forEach((key)=>{
   const u = ui[key];
-  const wheelTargets = [u.knobEl, u.valueEl.closest(".display")];
-
-  wheelTargets.forEach((el) => {
-    el.addEventListener("wheel", (e) => {
-      e.preventDefault();
-      const fast = e.shiftKey;
-      const dir = e.deltaY < 0 ? +1 : -1; // rueda arriba = incrementa
-      deltaValue(key, dir, fast);
-    }, { passive:false });
-  });
+  addWheel(u.knob, key);
+  addWheel(u.disp.closest(".disp"), key);
 });
 
-// Drag (arrastrar) sobre el knob: delta por movimiento vertical y horizontal
-function attachDrag(key){
-  const { knobEl } = ui[key];
-  let dragging = false;
-  let lastX = 0, lastY = 0;
-  let acc = 0;
+addWheel(ui.vs.wheel, "vs");
+addWheel(ui.vs.disp.closest(".disp"), "vs");
 
-  const onDown = (e) => {
-    dragging = true;
-    knobEl.setPointerCapture(e.pointerId);
-    lastX = e.clientX;
-    lastY = e.clientY;
-    acc = 0;
-  };
+/* Drag knobs (arrastrar) */
+function attachDragKnob(key){
+  const el = ui[key].knob;
+  let dragging=false, lastX=0, lastY=0, acc=0;
 
-  const onMove = (e) => {
-    if (!dragging) return;
+  el.addEventListener("pointerdown", (e)=>{
+    dragging=true;
+    el.setPointerCapture(e.pointerId);
+    lastX=e.clientX; lastY=e.clientY;
+    acc=0;
+  });
+  el.addEventListener("pointermove", (e)=>{
+    if(!dragging) return;
     const dx = e.clientX - lastX;
-    const dy = lastY - e.clientY; // arriba positivo
-    lastX = e.clientX;
-    lastY = e.clientY;
+    const dy = lastY - e.clientY;
+    lastX=e.clientX; lastY=e.clientY;
 
-    // mezcla: vertical pesa más
     const raw = (dy * 1.0) + (dx * 0.35);
-
-    // acumulador para no ir demasiado sensible
     acc += raw;
 
-    // cada ~10px => 1 "click"
     const threshold = 10;
     const fast = e.shiftKey;
+    while(acc >= threshold){ deltaValue(key, +1, fast); acc -= threshold; }
+    while(acc <= -threshold){ deltaValue(key, -1, fast); acc += threshold; }
+  });
+  const stop = ()=> dragging=false;
+  el.addEventListener("pointerup", stop);
+  el.addEventListener("pointercancel", stop);
 
-    while (acc >= threshold) { deltaValue(key, +1, fast); acc -= threshold; }
-    while (acc <= -threshold){ deltaValue(key, -1, fast); acc += threshold; }
-  };
-
-  const onUp = () => { dragging = false; };
-
-  knobEl.addEventListener("pointerdown", onDown);
-  knobEl.addEventListener("pointermove", onMove);
-  knobEl.addEventListener("pointerup", onUp);
-  knobEl.addEventListener("pointercancel", onUp);
-
-  // Teclado (flechas)
-  knobEl.addEventListener("keydown", (e) => {
+  // teclado
+  el.addEventListener("keydown", (e)=>{
     const fast = e.shiftKey;
-    if (e.key === "ArrowUp" || e.key === "ArrowRight") { e.preventDefault(); deltaValue(key, +1, fast); }
-    if (e.key === "ArrowDown" || e.key === "ArrowLeft") { e.preventDefault(); deltaValue(key, -1, fast); }
-    if (e.key === "Home") { e.preventDefault(); setValue(key, controls[key].min); }
-    if (e.key === "End")  { e.preventDefault(); setValue(key, controls[key].max); }
+    if (e.key === "ArrowUp" || e.key === "ArrowRight"){ e.preventDefault(); deltaValue(key, +1, fast); }
+    if (e.key === "ArrowDown" || e.key === "ArrowLeft"){ e.preventDefault(); deltaValue(key, -1, fast); }
+    if (e.key === "Home"){ e.preventDefault(); setValue(key, controls[key].min); }
+    if (e.key === "End"){ e.preventDefault(); setValue(key, controls[key].max); }
   });
 }
 
-Object.keys(ui).forEach(attachDrag);
+["course","speed","heading","altitude"].forEach(attachDragKnob);
 
-// Reset
-document.getElementById("resetBtn").addEventListener("click", () => {
-  controls.course.value = 165;
-  controls.speed.value = 100;
-  controls.heading.value = 130;
-  controls.altitude.value = 31000;
-  controls.vs.value = 0;
+/* Drag thumbwheel V/S */
+(function attachVsDrag(){
+  const el = ui.vs.wheel;
+  let dragging=false, lastY=0, acc=0;
+
+  el.addEventListener("pointerdown", (e)=>{
+    dragging=true;
+    el.setPointerCapture(e.pointerId);
+    lastY=e.clientY;
+    acc=0;
+  });
+  el.addEventListener("pointermove", (e)=>{
+    if(!dragging) return;
+    const dy = lastY - e.clientY; // arriba +
+    lastY=e.clientY;
+    acc += dy;
+
+    const threshold = 8;
+    const fast = e.shiftKey;
+    while(acc >= threshold){ deltaValue("vs", +1, fast); acc -= threshold; }
+    while(acc <= -threshold){ deltaValue("vs", -1, fast); acc += threshold; }
+  });
+  const stop=()=> dragging=false;
+  el.addEventListener("pointerup", stop);
+  el.addEventListener("pointercancel", stop);
+
+  el.addEventListener("keydown", (e)=>{
+    const fast = e.shiftKey;
+    if (e.key === "ArrowUp"){ e.preventDefault(); deltaValue("vs", +1, fast); }
+    if (e.key === "ArrowDown"){ e.preventDefault(); deltaValue("vs", -1, fast); }
+    if (e.key === "Home"){ e.preventDefault(); setValue("vs", controls.vs.min); }
+    if (e.key === "End"){ e.preventDefault(); setValue("vs", controls.vs.max); }
+  });
+})();
+
+/* Reset */
+$("#resetBtn").addEventListener("click", ()=>{
+  controls.course.value=165;
+  controls.speed.value=100;
+  controls.heading.value=130;
+  controls.altitude.value=31000;
+  controls.vs.value=0;
   renderAll();
 });
 
