@@ -3,116 +3,125 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MCP Básico (Demo)</title>
+  <title>MCP 737 (Básico)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="panel" aria-label="MCP Básico">
-    <header class="topbar">
-      <h1>MCP Básico</h1>
-      <div class="hint">Rueda / arrastra sobre cada selector • Click en +/−</div>
+  <main class="mcp" aria-label="MCP 737 básico">
+    <header class="mcp__hdr">
+      <div class="mcp__title">MCP 737 — Básico</div>
+      <div class="mcp__hint">Rueda / arrastra • Shift = paso rápido • Flechas en el selector</div>
     </header>
 
-    <section class="grid">
+    <section class="mcp__row">
       <!-- COURSE -->
-      <article class="card" data-control="course">
-        <div class="card__title">COURSE</div>
-        <div class="display" aria-label="Course value">
-          <span class="display__value" id="courseValue">165</span>
-          <span class="display__unit">°</span>
+      <div class="block">
+        <div class="label">COURSE</div>
+        <div class="disp">
+          <span id="courseDisp" class="disp__digits">165</span><span class="disp__unit">°</span>
         </div>
-        <div class="knob" id="courseKnob" tabindex="0" role="slider"
-             aria-label="Course selector" aria-valuemin="0" aria-valuemax="359" aria-valuenow="165">
-          <div class="knob__ring"></div>
-          <div class="knob__marker" id="courseMarker"></div>
+        <div class="control">
+          <div class="knob" id="courseKnob" tabindex="0" role="slider"
+               aria-label="Course" aria-valuemin="0" aria-valuemax="359" aria-valuenow="165">
+            <div class="knob__ticks"></div>
+            <div class="knob__cap"></div>
+            <div class="knob__pointer" id="coursePtr"></div>
+          </div>
+          <div class="pm">
+            <button class="pm__btn" data-action="dec" data-target="course">−</button>
+            <button class="pm__btn" data-action="inc" data-target="course">+</button>
+          </div>
         </div>
-        <div class="btnrow">
-          <button class="btn" data-action="dec" data-target="course">−</button>
-          <button class="btn" data-action="inc" data-target="course">+</button>
-        </div>
-        <div class="subhint">Paso: 1°</div>
-      </article>
+        <div class="sub">Paso 1° (Shift 10)</div>
+      </div>
 
-      <!-- SPEED -->
-      <article class="card" data-control="speed">
-        <div class="card__title">SPEED</div>
-        <div class="display" aria-label="Speed value">
-          <span class="display__value" id="speedValue">100</span>
-          <span class="display__unit">kt</span>
+      <!-- SPEED / IAS -->
+      <div class="block">
+        <div class="label">IAS</div>
+        <div class="disp">
+          <span id="speedDisp" class="disp__digits">100</span><span class="disp__unit">kt</span>
         </div>
-        <div class="knob" id="speedKnob" tabindex="0" role="slider"
-             aria-label="Speed selector" aria-valuemin="0" aria-valuemax="450" aria-valuenow="100">
-          <div class="knob__ring"></div>
-          <div class="knob__marker" id="speedMarker"></div>
+        <div class="control">
+          <div class="knob" id="speedKnob" tabindex="0" role="slider"
+               aria-label="Speed" aria-valuemin="0" aria-valuemax="450" aria-valuenow="100">
+            <div class="knob__ticks"></div>
+            <div class="knob__cap"></div>
+            <div class="knob__pointer" id="speedPtr"></div>
+          </div>
+          <div class="pm">
+            <button class="pm__btn" data-action="dec" data-target="speed">−</button>
+            <button class="pm__btn" data-action="inc" data-target="speed">+</button>
+          </div>
         </div>
-        <div class="btnrow">
-          <button class="btn" data-action="dec" data-target="speed">−</button>
-          <button class="btn" data-action="inc" data-target="speed">+</button>
-        </div>
-        <div class="subhint">Paso: 1 kt (Shift: 10)</div>
-      </article>
+        <div class="sub">Paso 1 kt (Shift 10)</div>
+      </div>
 
       <!-- HEADING -->
-      <article class="card" data-control="heading">
-        <div class="card__title">HEADING</div>
-        <div class="display" aria-label="Heading value">
-          <span class="display__value" id="headingValue">130</span>
-          <span class="display__unit">°</span>
+      <div class="block">
+        <div class="label">HEADING</div>
+        <div class="disp">
+          <span id="headingDisp" class="disp__digits">130</span><span class="disp__unit">°</span>
         </div>
-        <div class="knob" id="headingKnob" tabindex="0" role="slider"
-             aria-label="Heading selector" aria-valuemin="0" aria-valuemax="359" aria-valuenow="130">
-          <div class="knob__ring"></div>
-          <div class="knob__marker" id="headingMarker"></div>
+        <div class="control">
+          <div class="knob" id="headingKnob" tabindex="0" role="slider"
+               aria-label="Heading" aria-valuemin="0" aria-valuemax="359" aria-valuenow="130">
+            <div class="knob__ticks"></div>
+            <div class="knob__cap"></div>
+            <div class="knob__pointer" id="headingPtr"></div>
+          </div>
+          <div class="pm">
+            <button class="pm__btn" data-action="dec" data-target="heading">−</button>
+            <button class="pm__btn" data-action="inc" data-target="heading">+</button>
+          </div>
         </div>
-        <div class="btnrow">
-          <button class="btn" data-action="dec" data-target="heading">−</button>
-          <button class="btn" data-action="inc" data-target="heading">+</button>
-        </div>
-        <div class="subhint">Paso: 1° (Shift: 10)</div>
-      </article>
+        <div class="sub">Paso 1° (Shift 10)</div>
+      </div>
 
       <!-- ALTITUDE -->
-      <article class="card" data-control="altitude">
-        <div class="card__title">ALTITUDE</div>
-        <div class="display" aria-label="Altitude value">
-          <span class="display__value" id="altitudeValue">31000</span>
-          <span class="display__unit">ft</span>
+      <div class="block">
+        <div class="label">ALTITUDE</div>
+        <div class="disp disp--wide">
+          <span id="altitudeDisp" class="disp__digits">31000</span><span class="disp__unit">ft</span>
         </div>
-        <div class="knob" id="altitudeKnob" tabindex="0" role="slider"
-             aria-label="Altitude selector" aria-valuemin="0" aria-valuemax="45000" aria-valuenow="31000">
-          <div class="knob__ring"></div>
-          <div class="knob__marker" id="altitudeMarker"></div>
+        <div class="control">
+          <div class="knob knob--big" id="altitudeKnob" tabindex="0" role="slider"
+               aria-label="Altitude" aria-valuemin="0" aria-valuemax="45000" aria-valuenow="31000">
+            <div class="knob__ticks"></div>
+            <div class="knob__cap"></div>
+            <div class="knob__pointer" id="altitudePtr"></div>
+          </div>
+          <div class="pm">
+            <button class="pm__btn" data-action="dec" data-target="altitude">−</button>
+            <button class="pm__btn" data-action="inc" data-target="altitude">+</button>
+          </div>
         </div>
-        <div class="btnrow">
-          <button class="btn" data-action="dec" data-target="altitude">−</button>
-          <button class="btn" data-action="inc" data-target="altitude">+</button>
-        </div>
-        <div class="subhint">Paso: 100 ft (Shift: 1000)</div>
-      </article>
+        <div class="sub">Paso 100 ft (Shift 1000)</div>
+      </div>
 
       <!-- V/S -->
-      <article class="card" data-control="vs">
-        <div class="card__title">V/S</div>
-        <div class="display" aria-label="Vertical speed value">
-          <span class="display__value" id="vsValue">0</span>
-          <span class="display__unit">fpm</span>
+      <div class="block">
+        <div class="label">V/S</div>
+        <div class="disp">
+          <span id="vsDisp" class="disp__digits">0</span><span class="disp__unit">fpm</span>
         </div>
-        <div class="knob" id="vsKnob" tabindex="0" role="slider"
-             aria-label="Vertical speed selector" aria-valuemin="-6000" aria-valuemax="6000" aria-valuenow="0">
-          <div class="knob__ring"></div>
-          <div class="knob__marker" id="vsMarker"></div>
+        <div class="control control--vs">
+          <div class="thumbwheel" id="vsWheel" tabindex="0" role="slider"
+               aria-label="Vertical Speed" aria-valuemin="-6000" aria-valuemax="6000" aria-valuenow="0">
+            <div class="thumbwheel__face"></div>
+            <div class="thumbwheel__stripe"></div>
+          </div>
+          <div class="pm">
+            <button class="pm__btn" data-action="dec" data-target="vs">−</button>
+            <button class="pm__btn" data-action="inc" data-target="vs">+</button>
+          </div>
         </div>
-        <div class="btnrow">
-          <button class="btn" data-action="dec" data-target="vs">−</button>
-          <button class="btn" data-action="inc" data-target="vs">+</button>
-        </div>
-        <div class="subhint">Paso: 100 fpm (Shift: 500)</div>
-      </article>
+        <div class="sub">Paso 100 (Shift 500)</div>
+      </div>
     </section>
 
-    <footer class="footer">
+    <footer class="mcp__ftr">
       <button class="ghost" id="resetBtn">Reset</button>
-      <div class="small">Demo estática para GitHub Pages • Sin dependencias</div>
+      <div class="small">GitHub Pages • Sin dependencias • UI “tipo 737”</div>
     </footer>
   </main>
 
